@@ -1,4 +1,4 @@
-import { months } from './constants';
+import { type MonthData } from './constants';
 
 export class ConsumptionData {
 	private _yearlyConsumption: number;
@@ -15,24 +15,21 @@ export class ConsumptionData {
 		return this._yearlyConsumption;
 	}
 
-	public getMonthly(): number[] {
-		// For now, simple even distribution
-		const monthlyConsumption = this._yearlyConsumption / 12;
-		return Array(12).fill(monthlyConsumption);
+	public getMonthlyData(month: MonthData): number[] {
+		const daysInMonth = month.daysCount;
 
-		// Future implementation could use custom monthly distribution if available
-	}
-
-	public getDaily(month: string): number[] {
-		// Simple even distribution for now
-		const monthIndex = months.indexOf(month);
-		const daysInMonth = 30; // Simplified; could use actual days per month
+		// Calculate daily consumption
 		const monthlyConsumption = this._yearlyConsumption / 12;
 		const dailyConsumption = monthlyConsumption / daysInMonth;
 
+		// Return an array with the correct number of days
 		return Array(daysInMonth).fill(dailyConsumption);
+	}
 
-		// Future implementation could use custom daily patterns if available
+	public getDailyData(month: MonthData): number[] {
+		// For now, simple even distribution
+		const monthlyConsumption = this._yearlyConsumption / 24;
+		return Array(24).fill(monthlyConsumption);
 	}
 
 	// Clone method for immutability if needed

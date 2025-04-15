@@ -1,31 +1,33 @@
-import { months } from './constants';
+import { monthsData, type MonthData } from './constants';
 import { ConsumptionData } from './ConsumptionData';
 
 export function getChartData(
 	viewMode: 'month' | 'day',
-	selectedMonth: string,
+	selectedMonth: MonthData,
 	data: ConsumptionData
 ) {
-	if (viewMode === 'month') {
+	if (viewMode === 'day') {
+		const hours = Array.from({ length: 24 }, (_, i) => i + 1);
 		return {
-			labels: months,
+			labels: hours,
 			datasets: [
 				{
 					label: 'Consumption (kWh)',
-					data: data.getMonthly(),
+					data: data.getDailyData(selectedMonth),
 					borderColor: 'blue',
 					backgroundColor: 'lightblue'
 				}
 			]
 		};
-	} else {
-		const days = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+	}
+	if (viewMode === 'month') {
+		const days = Array.from({ length: selectedMonth.daysCount }, (_, i) => `Day ${i + 1}`);
 		return {
 			labels: days,
 			datasets: [
 				{
-					label: `Consumption in ${selectedMonth} (kWh)`,
-					data: data.getDaily(selectedMonth),
+					label: `Consumption in ${selectedMonth.name} (kWh)`,
+					data: data.getMonthlyData(selectedMonth),
 					borderColor: 'blue',
 					backgroundColor: 'lightblue'
 				}

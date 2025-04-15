@@ -2,13 +2,13 @@
 	import { onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
 	import { writable, get } from 'svelte/store';
-	import { months } from '$lib/constants';
+	import { monthsData, type MonthData } from '$lib/constants';
 	import { getChartData } from '$lib/chartUtils';
 	import { ConsumptionData } from '$lib/ConsumptionData';
 
 	let chartEl: HTMLCanvasElement;
 	let viewMode: 'month' | 'day' = 'month';
-	let selectedMonth = 'January';
+	let selectedMonth: MonthData = monthsData[0]; // Default to January
 	let yearlyConsumption = 3600; // Default yearly in kWh
 
 	// Create a store with our ConsumptionData class
@@ -59,8 +59,8 @@
 	<section class="space-y-2">
 		<label class="block font-semibold">Select Month:</label>
 		<select bind:value={selectedMonth} class="w-48 rounded border p-2" on:change={updateChart}>
-			{#each months as month}
-				<option value={month}>{month}</option>
+			{#each monthsData as month}
+				<option value={month}>{month.name}</option>
 			{/each}
 		</select>
 	</section>
