@@ -1,4 +1,4 @@
-import { type MonthData, Month } from './constants';
+import { type MonthData, Month, monthsData } from './constants';
 
 export class ConsumptionData {
 	private _yearlyConsumption: number;
@@ -44,6 +44,12 @@ export class ConsumptionData {
 		// Calculate what portion of yearly consumption this month should take
 		const normalizedWeight = this._monthlyWeights[month] / this._totalWeight;
 		return this._yearlyConsumption * normalizedWeight;
+	}
+
+	// Get yearly data showing consumption for each month
+	public getYearlyData(): number[] {
+		// Return the weighted consumption for each month in order
+		return monthsData.map((monthData) => this.getWeightedMonthlyConsumption(monthData.month));
 	}
 
 	// Get hourly data for a month (previously getDailyData)
