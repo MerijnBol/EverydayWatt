@@ -64,4 +64,7 @@ export function getChartData(
 			options: commonOptions
 		};
 	}
+
+	// Default case to handle invalid viewMode
+    throw new Error(`Invalid viewMode: ${viewMode}`);
 }
