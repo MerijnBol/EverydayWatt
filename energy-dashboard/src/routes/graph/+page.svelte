@@ -15,19 +15,22 @@
 	function drawChart() {
         const data = get(graphDataStore); // Access the store value
         const chartData = getChartData(viewMode, selectedMonth, data);
-        if (!chart) {
-            chart = new Chart(chartEl, {
-                type: 'line',
-                data: chartData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+		if (!chart) {
+			chart = new Chart(chartEl, {
+				type: 'line',
+				data: chartData,
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					animation: {
+						duration: 0 // Disable initial animation
+					},
+					scales: {
+						y: {
+							beginAtZero: true
+						}
+					}
+				}
             });
         } else {
             chart.data = chartData;

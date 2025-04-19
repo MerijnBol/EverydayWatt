@@ -5,14 +5,6 @@ export function getChartData(
 	selectedMonth: MonthData,
 	data: ConsumptionData
 ) {
-	// Common options for all chart types to ensure y-axis starts at 0
-	const commonOptions = {
-		scales: {
-			y: {
-				beginAtZero: true
-			}
-		}
-	};
 
 	if (viewMode === 'year') {
 		return {
@@ -25,8 +17,7 @@ export function getChartData(
 					backgroundColor: 'rgba(53, 162, 235, 0.5)',
 					tension: 0.1
 				}
-			],
-			options: commonOptions
+			]
 		};
 	}
 
@@ -42,8 +33,7 @@ export function getChartData(
 					backgroundColor: 'rgba(75, 192, 192, 0.5)',
 					tension: 0.1
 				}
-			],
-			options: commonOptions
+			]
 		};
 	}
 
@@ -59,8 +49,7 @@ export function getChartData(
 					backgroundColor: 'rgba(255, 99, 132, 0.5)',
 					tension: 0.1
 				}
-			],
-			options: commonOptions
+			]
 		};
 	}
 
