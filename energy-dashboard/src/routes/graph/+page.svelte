@@ -7,6 +7,7 @@
 
 
 	let chartEl: HTMLCanvasElement;
+	// TODO put chart config in state
 	let viewMode: 'year' | 'month' | 'day' = 'month';
 	let selectedMonth: MonthData = monthsData[0];
 	let chart: Chart;

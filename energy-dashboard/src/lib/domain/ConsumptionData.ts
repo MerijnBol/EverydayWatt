@@ -1,8 +1,18 @@
-import { type MonthData, Month, monthsData } from '../constants';
+import { 
+	type MonthData, 
+	Month, 
+	monthsData, 
+	type ApplianceProfile, 
+	defaultApplianceProfiles, 
+	timeOfDayHours,
+	TimeOfDay,
+	Intensity 
+} from '../constants';
 
 export class ConsumptionData {
 	private _yearlyConsumption: number;
 	private _hourlyData: number[][]; // 365 days × 24 hours
+	private _applianceProfiles: ApplianceProfile[];
 	
 	// Hidden monthly usage weightings (not configurable externally)
 	// These numbers represent the relative energy consumption in each month
@@ -31,6 +41,8 @@ export class ConsumptionData {
 	constructor(yearlyConsumption: number = 0) {
 		this._yearlyConsumption = yearlyConsumption;
 		this._hourlyData = this.createEmptyHourlyData();
+		this._applianceProfiles = JSON.parse(JSON.stringify(defaultApplianceProfiles));
+		
 		if (yearlyConsumption > 0) {
 			this.generateHourlyData();
 		}
@@ -66,8 +78,12 @@ export class ConsumptionData {
 			const normalizedWeight = this._monthlyWeights[monthData.month] / this._totalWeight;
 			const monthlyConsumption = this._yearlyConsumption * normalizedWeight;
 			
-			// Calculate baseline daily consumption
-			const dailyAverage = monthlyConsumption / monthData.daysCount;
+			// Calculate baseline daily consumption (account for appliances taking some percentage)
+			const appliancePercentage = 0.4; // Appliances use approximately 40% of total consumption
+			const baselinePercentage = 1 - appliancePercentage;
+			
+			// Base consumption (without appliance-specific usage)
+			const baselineDailyAverage = (monthlyConsumption * baselinePercentage) / monthData.daysCount;
 			
 			// Generate data for each day in the month
 			for (let day = 0; day < monthData.daysCount; day++) {
@@ -78,13 +94,13 @@ export class ConsumptionData {
 				const dayOfWeek = (dayOffset + day) % 7;
 				const weekendFactor = dayOfWeek === 5 || dayOfWeek === 6 ? 1.2 : 1.0;
 				
-				// Total consumption for this day
-				const dailyConsumption = dailyAverage * variationFactor * weekendFactor;
+				// Total consumption for this day (baseline only)
+				const baselineDailyConsumption = baselineDailyAverage * variationFactor * weekendFactor;
 				
-				// Hourly average for this day
-				const hourlyAverage = dailyConsumption / 24;
+				// Hourly average for this day (baseline)
+				const baselineHourlyAverage = baselineDailyConsumption / 24;
 				
-				// Generate hourly data for this day
+				// Initialize hourly consumption with baseline pattern
 				for (let hour = 0; hour < 24; hour++) {
 					// Create a usage pattern: lower at night (10pm-6am), higher during day with peaks in morning and evening
 					let hourlyFactor = 1.0;
@@ -97,13 +113,76 @@ export class ConsumptionData {
 						hourlyFactor = 1.5; // Evening peak
 					}
 					
-					// Store the hourly consumption
-					this._hourlyData[dayOffset + day][hour] = hourlyAverage * hourlyFactor;
+					// Store the baseline hourly consumption
+					this._hourlyData[dayOffset + day][hour] = baselineHourlyAverage * hourlyFactor;
 				}
+				
+				// Add appliance-specific consumption patterns if enabled
+				this.applyApplianceProfiles(dayOffset + day, monthData.month, dayOfWeek, monthlyConsumption * appliancePercentage);
 			}
 			
 			// Update day offset for the next month
 			dayOffset += monthData.daysCount;
+		}
+	}
+
+	private applyApplianceProfiles(dayOfYear: number, month: Month, dayOfWeek: number, monthlyApplianceConsumption: number): void {
+		// Get only enabled appliance profiles
+		const enabledProfiles = this._applianceProfiles.filter(profile => profile.enabled);
+		
+		if (enabledProfiles.length === 0) {
+			return; // No appliances enabled, exit early
+		}
+		
+		// Calculate a fair share of consumption for each appliance
+		const applianceShare = monthlyApplianceConsumption / 30 / enabledProfiles.length;
+		
+		// For each enabled appliance, apply its consumption pattern
+		for (const profile of enabledProfiles) {
+			// Get consumption factor based on intensity
+			const intensityFactor = profile.consumptionFactors[profile.intensity];
+			
+			// Calculate appliance consumption for this day
+			const applianceConsumption = applianceShare * intensityFactor;
+			
+			// Seasonal adjustments for heating/cooling
+			let seasonalFactor = 1.0;
+			if (profile.id === 'heatpump-heating') {
+				// More heating in winter months
+				seasonalFactor = month < 3 || month > 9 ? 1.8 : (month < 5 || month > 8 ? 0.8 : 0.2);
+			} else if (profile.id === 'heatpump-cooling') {
+				// More cooling in summer months
+				seasonalFactor = month > 4 && month < 9 ? 1.8 : (month > 2 && month < 11 ? 0.6 : 0.1);
+			}
+			
+			// Weekend adjustment (some appliances used more on weekends)
+			const isWeekend = dayOfWeek === 5 || dayOfWeek === 6;
+			let weekendFactor = 1.0;
+			if (profile.id === 'washing-machine' || profile.id === 'dishwasher') {
+				weekendFactor = isWeekend ? 1.5 : 0.9;
+			}
+			
+			// Total consumption for this appliance on this day
+			const dailyApplianceConsumption = applianceConsumption * seasonalFactor * weekendFactor;
+			
+			// Distribute based on selected times of day
+			const selectedHours: number[] = [];
+			profile.timeOfDay.forEach(timeOfDay => {
+				selectedHours.push(...timeOfDayHours[timeOfDay]);
+			});
+			
+			// Remove duplicates from selectedHours (in case timeOfDay periods overlap)
+			const uniqueHours = [...new Set(selectedHours)];
+			
+			if (uniqueHours.length > 0) {
+				// Calculate consumption per hour based on the time slots selected
+				const hourlyConsumption = dailyApplianceConsumption / uniqueHours.length;
+				
+				// Add appliance consumption to the hourly data
+				for (const hour of uniqueHours) {
+					this._hourlyData[dayOfYear][hour] += hourlyConsumption;
+				}
+			}
 		}
 	}
 
@@ -114,6 +193,37 @@ export class ConsumptionData {
 
 	public getYearlyConsumption(): number {
 		return this._yearlyConsumption;
+	}
+
+	public getApplianceProfiles(): ApplianceProfile[] {
+		return this._applianceProfiles;
+	}
+
+	public updateApplianceProfile(profileId: string, updates: Partial<ApplianceProfile>): void {
+		const index = this._applianceProfiles.findIndex(profile => profile.id === profileId);
+		if (index !== -1) {
+			this._applianceProfiles[index] = { 
+				...this._applianceProfiles[index], 
+				...updates 
+			};
+			
+			// Regenerate data if yearly consumption is set
+			if (this._yearlyConsumption > 0) {
+				this.generateHourlyData();
+			}
+		}
+	}
+
+	public toggleApplianceEnabled(profileId: string, enabled: boolean): void {
+		this.updateApplianceProfile(profileId, { enabled });
+	}
+
+	public setApplianceIntensity(profileId: string, intensity: Intensity): void {
+		this.updateApplianceProfile(profileId, { intensity });
+	}
+
+	public setApplianceTimeOfDay(profileId: string, timeOfDay: TimeOfDay[]): void {
+		this.updateApplianceProfile(profileId, { timeOfDay });
 	}
 
 	// Get yearly data showing consumption for each month
@@ -166,6 +276,8 @@ export class ConsumptionData {
 		const clone = new ConsumptionData(this._yearlyConsumption);
 		// Deep copy the hourly data array
 		clone._hourlyData = JSON.parse(JSON.stringify(this._hourlyData));
+		// Deep copy the appliance profiles
+		clone._applianceProfiles = JSON.parse(JSON.stringify(this._applianceProfiles));
 		return clone;
 	}
 }
