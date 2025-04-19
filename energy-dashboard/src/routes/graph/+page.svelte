@@ -2,9 +2,8 @@
 	import { onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
     import { get } from 'svelte/store';
-	import { monthsData, type MonthData } from '$lib/constants';
-	import { getChartData } from '$lib/chartUtils';
-    import { consumptionData } from '$lib/stores';
+	import { monthsData, type MonthData, graphDataStore } from '$lib';
+	import { getChartData } from './chartUtils';
 
 
 	let chartEl: HTMLCanvasElement;
@@ -14,7 +13,7 @@
 
 
 	function drawChart() {
-        const data = get(consumptionData); // Access the store value
+        const data = get(graphDataStore); // Access the store value
         const chartData = getChartData(viewMode, selectedMonth, data);
         if (!chart) {
             chart = new Chart(chartEl, {

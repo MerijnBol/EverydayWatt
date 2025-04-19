@@ -1,4 +1,4 @@
-import { type MonthData, Month, monthsData } from './constants';
+import { type MonthData, Month, monthsData } from '../constants';
 
 export class ConsumptionData {
 	private _yearlyConsumption: number;

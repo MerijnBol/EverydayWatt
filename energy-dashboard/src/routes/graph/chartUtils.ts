@@ -1,5 +1,4 @@
-import { type MonthData, monthsData } from './constants';
-import { ConsumptionData } from './ConsumptionData';
+import { type MonthData, monthsData, ConsumptionData } from '$lib';
 
 export function getChartData(
 	viewMode: 'year' | 'month' | 'day',

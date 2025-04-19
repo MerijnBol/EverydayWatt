@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
-	import { consumptionData } from '$lib/stores';
+	import { graphDataStore } from '$lib';
 
-	const data = get(consumptionData);
+	const data = get(graphDataStore);
 	let yearlyConsumptionInput = data.getYearlyConsumption();
 
 	function updateConsumptionData() {
 		data.setYearlyConsumption(yearlyConsumptionInput);
-		consumptionData.set(data.clone());
+		graphDataStore.set(data.clone());
 	};
 </script>
 
