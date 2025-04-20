@@ -67,7 +67,7 @@ export interface ApplianceProfile {
 	};
 }
 
-export const defaultApplianceProfiles: ApplianceProfile[] = [
+export const availableApplianceProfiles: ApplianceProfile[] = [
 	{
 		id: 'washing-machine',
 		name: 'Washing Machine',

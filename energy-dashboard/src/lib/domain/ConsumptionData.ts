@@ -3,7 +3,6 @@ import {
 	Month, 
 	monthsData, 
 	type ApplianceProfile, 
-	defaultApplianceProfiles, 
 	timeOfDayHours,
 	TimeOfDay,
 	Intensity 
@@ -41,7 +40,7 @@ export class ConsumptionData {
 	constructor(yearlyConsumption: number = 0) {
 		this._yearlyConsumption = yearlyConsumption;
 		this._hourlyData = this.createEmptyHourlyData();
-		this._applianceProfiles = JSON.parse(JSON.stringify(defaultApplianceProfiles));
+		this._applianceProfiles = [];
 		
 		if (yearlyConsumption > 0) {
 			this.generateHourlyData();
@@ -199,31 +198,20 @@ export class ConsumptionData {
 		return this._applianceProfiles;
 	}
 
-	public updateApplianceProfile(profileId: string, updates: Partial<ApplianceProfile>): void {
-		const index = this._applianceProfiles.findIndex(profile => profile.id === profileId);
-		if (index !== -1) {
-			this._applianceProfiles[index] = { 
-				...this._applianceProfiles[index], 
-				...updates 
-			};
-			
-			// Regenerate data if yearly consumption is set
-			if (this._yearlyConsumption > 0) {
-				this.generateHourlyData();
-			}
+	public updateApplianceProfile(profile: ApplianceProfile): void {
+		const index = this._applianceProfiles.findIndex(profile => profile.id === profile.id);
+		if (index !== -1 && !profile.enabled) {
+			// Remove the appliance profile if it is disabled
+			this._applianceProfiles.splice(index, 1);
+		} else if (index === -1) {
+			this._applianceProfiles.push(profile);
+		} else {
+			this._applianceProfiles[index] = profile;
 		}
-	}
-
-	public toggleApplianceEnabled(profileId: string, enabled: boolean): void {
-		this.updateApplianceProfile(profileId, { enabled });
-	}
-
-	public setApplianceIntensity(profileId: string, intensity: Intensity): void {
-		this.updateApplianceProfile(profileId, { intensity });
-	}
-
-	public setApplianceTimeOfDay(profileId: string, timeOfDay: TimeOfDay[]): void {
-		this.updateApplianceProfile(profileId, { timeOfDay });
+		// Regenerate data if yearly consumption is set
+		if (this._yearlyConsumption > 0) {
+			this.generateHourlyData();
+		}
 	}
 
 	// Get yearly data showing consumption for each month
