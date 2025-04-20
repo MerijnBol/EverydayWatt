@@ -1,22 +1,29 @@
 <script lang="ts">
 	import { get } from 'svelte/store';
+	import { pushState } from '$app/navigation';
+	import { page } from '$app/state';
 	import { graphDataStore } from '$lib';
+	import { type ApplianceProfile } from '$lib/constants';
 	import Appliance from '$lib/components/ApplianceProfile.svelte';
-	import { type ApplianceProfile, availableApplianceProfiles } from '$lib/constants';
+	import UsageModal from '$lib/components/UsageModal.svelte';
 
 	const data = get(graphDataStore);
 	let yearlyConsumptionInput = data.getYearlyConsumption();
-	let applianceProfiles = data.getApplianceProfiles();
+	$: applianceProfiles = data.getApplianceProfiles();
 
-	data.updateApplianceProfile(availableApplianceProfiles[0])
-	
+	function showModal() {
+		pushState('', {
+			showModal: true
+		});
+	}
+
 	function updateConsumptionData() {
 		data.setYearlyConsumption(yearlyConsumptionInput);
 		graphDataStore.set(data.clone());
 	}
 
 	const handleProfileUpdate = (profile: ApplianceProfile) => {
-		console.log(profile)
+		console.log(profile);
 		data.updateApplianceProfile(profile);
 		graphDataStore.set(data.clone());
 	};
@@ -42,4 +49,12 @@
 			{/each}
 		</div>
 	</div>
+
+	<button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded" on:click={showModal}>
+		Set Up Usage
+	</button>
+
+	{#if page.state.showModal}
+		<UsageModal {applianceProfiles} handleUpdate={handleProfileUpdate} closeModal={() => history.back()}/>
+	{/if}
 </section>

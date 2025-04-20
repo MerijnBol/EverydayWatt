@@ -4,8 +4,7 @@ import {
 	monthsData, 
 	type ApplianceProfile, 
 	timeOfDayHours,
-	TimeOfDay,
-	Intensity 
+	availableApplianceProfiles
 } from '../constants';
 
 export class ConsumptionData {
@@ -40,7 +39,7 @@ export class ConsumptionData {
 	constructor(yearlyConsumption: number = 0) {
 		this._yearlyConsumption = yearlyConsumption;
 		this._hourlyData = this.createEmptyHourlyData();
-		this._applianceProfiles = [];
+		this._applianceProfiles = JSON.parse(JSON.stringify(availableApplianceProfiles));
 		
 		if (yearlyConsumption > 0) {
 			this.generateHourlyData();
@@ -200,10 +199,7 @@ export class ConsumptionData {
 
 	public updateApplianceProfile(profile: ApplianceProfile): void {
 		const index = this._applianceProfiles.findIndex(profile => profile.id === profile.id);
-		if (index !== -1 && !profile.enabled) {
-			// Remove the appliance profile if it is disabled
-			this._applianceProfiles.splice(index, 1);
-		} else if (index === -1) {
+		if (index === -1) {
 			this._applianceProfiles.push(profile);
 		} else {
 			this._applianceProfiles[index] = profile;

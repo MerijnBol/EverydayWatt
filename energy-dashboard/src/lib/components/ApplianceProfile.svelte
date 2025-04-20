@@ -4,8 +4,8 @@
     export let profile;
     export let handleUpdate;
 
-    const toggleEnabled = () => {
-        profile.enabled = !profile.enabled;
+    const diableProfile = () => {
+        profile.enabled = false;
         handleUpdate(profile);
     };
     const setApplianceIntensity = (intensity: Intensity) => {
@@ -33,17 +33,21 @@
         enabled: profile.timeOfDay.includes(timeOfDay)
     }));
 </script>
+
+{#if profile.enabled}
 <div class="border rounded-lg p-3 bg-white shadow-sm">
     <div class="flex items-center justify-between mb-2">
         <h3 class="font-medium">{profile.name}</h3>
         <label class="relative inline-flex items-center cursor-pointer">
-            <input 
-                type="checkbox" 
-                class="sr-only peer"
-                checked={profile.enabled}
-                on:change={toggleEnabled}
-            />
-            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+            <button 
+                class="text-gray-500"
+                on:click={diableProfile}
+                aria-label="Disable Profile"
+            >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6.5 4a1 1 0 00-.707.293l-.5.5H3a1 1 0 100 2h14a1 1 0 100-2h-2.293l-.5-.5A1 1 0 0013.5 4h-7zM5 8a1 1 0 011-1h8a1 1 0 011 1v8a2 2 0 01-2 2H7a2 2 0 01-2-2V8zm3 2a1 1 0 10-2 0v4a1 1 0 102 0v-4zm4 0a1 1 0 10-2 0v4a1 1 0 102 0v-4z" clip-rule="evenodd" />
+            </svg>
+            </button>
         </label>
     </div>
     <div class="mb-3">
@@ -74,3 +78,4 @@
         </div>
     </div>
 </div>
+{/if}
