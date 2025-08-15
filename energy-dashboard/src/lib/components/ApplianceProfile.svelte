@@ -1,16 +1,13 @@
 <script lang="ts">
-    import { Intensity, TimeOfDay } from '$lib/constants';
+    import { Intensity, TimeOfDay, type ApplianceProfile } from '$lib/constants';
 
-    export let profile;
-    export let handleUpdate;
+    const {profile = $bindable<ApplianceProfile>()} = $props();
 
     const diableProfile = () => {
         profile.enabled = false;
-        handleUpdate(profile);
     };
     const setApplianceIntensity = (intensity: Intensity) => {
         profile.intensity = intensity;
-        handleUpdate(profile);
     };
     const toggleTimeOfDay = (timeOfDay: TimeOfDay) => {
         const index = profile.timeOfDay.indexOf(timeOfDay);
@@ -20,18 +17,17 @@
             profile.timeOfDay.push(timeOfDay);
         }
         profile.timeOfDay = [...profile.timeOfDay]; // Reassign to trigger reactivity
-        handleUpdate(profile);
     };
 
-    $: intensityOptions = Object.values(Intensity).map(intensity => ({
+    const intensityOptions = $derived(Object.values(Intensity).map(intensity => ({
         value: intensity,
         enabled: profile.intensity === intensity
-    }));
+    })));
 
-    $: timeOfDayOptions = Object.values(TimeOfDay).map(timeOfDay => ({
+    const timeOfDayOptions = $derived(Object.values(TimeOfDay).map(timeOfDay => ({
         value: timeOfDay,
         enabled: profile.timeOfDay.includes(timeOfDay)
-    }));
+    })));
 </script>
 
 {#if profile.enabled}
@@ -41,7 +37,7 @@
         <label class="relative inline-flex items-center cursor-pointer">
             <button 
                 class="text-gray-500"
-                on:click={diableProfile}
+                onclick={diableProfile}
                 aria-label="Disable Profile"
             >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -56,7 +52,7 @@
             {#each intensityOptions as { value, enabled }}
                 <button 
                     class="px-2 py-1 text-xs rounded-full border {enabled ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 border-gray-300'}"
-                    on:click={() => setApplianceIntensity(value)}
+                    onclick={() => setApplianceIntensity(value)}
                 >
                     {value.charAt(0).toUpperCase() + value.slice(1)}
                 </button>
@@ -69,7 +65,7 @@
             {#each timeOfDayOptions as { value, enabled }}
                 <button 
                     class="px-2 py-1 text-xs rounded-full border {enabled ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 border-gray-300'}"
-                    on:click={() => toggleTimeOfDay(value)}
+                    onclick={() => toggleTimeOfDay(value)}
                     disabled={!profile.enabled}
                 >
                     {value.charAt(0).toUpperCase() + value.slice(1)}

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Chart from 'chart.js/auto';
-    import { get } from 'svelte/store';
-	import { monthsData, type MonthData, graphDataStore } from '$lib';
+	import { monthsData, type MonthData, getGraphData } from '$lib';
 	import { getChartData } from './chartUtils';
 
 
@@ -12,10 +11,10 @@
 	let selectedMonth: MonthData = monthsData[0];
 	let chart: Chart;
 
+	const graphData = getGraphData();
 
 	function drawChart() {
-        const data = get(graphDataStore); // Access the store value
-        const chartData = getChartData(viewMode, selectedMonth, data);
+        const chartData = getChartData(viewMode, selectedMonth, graphData);
 		if (!chart) {
 			chart = new Chart(chartEl, {
 				type: 'line',

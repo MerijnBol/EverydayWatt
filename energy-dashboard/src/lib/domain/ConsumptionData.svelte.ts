@@ -8,9 +8,9 @@ import {
 } from '../constants';
 
 export class ConsumptionData {
-	private _yearlyConsumption: number;
-	private _hourlyData: number[][]; // 365 days × 24 hours
-	private _applianceProfiles: ApplianceProfile[];
+	private _yearlyConsumption: number = $state(0);
+	private _hourlyData: number[][] = $state([]); // 365 days × 24 hours
+	private _applianceProfiles: ApplianceProfile[] = $state([]);
 	
 	// Hidden monthly usage weightings (not configurable externally)
 	// These numbers represent the relative energy consumption in each month
@@ -197,8 +197,8 @@ export class ConsumptionData {
 		return this._applianceProfiles;
 	}
 
-	public updateApplianceProfile(profile: ApplianceProfile): void {
-		const index = this._applianceProfiles.findIndex(profile => profile.id === profile.id);
+	public updateApplianceProfile = (profile: ApplianceProfile): void => {
+		const index = this._applianceProfiles.findIndex(p => p.id === profile.id);
 		if (index === -1) {
 			this._applianceProfiles.push(profile);
 		} else {
@@ -212,7 +212,7 @@ export class ConsumptionData {
 
 	// Get yearly data showing consumption for each month
 	public getYearlyData(): number[] {
-		// Return the total consumption for each month
+		// Return the total consumption for each month§
 		const monthlyTotals: number[] = [];
 		
 		let dayOffset = 0;

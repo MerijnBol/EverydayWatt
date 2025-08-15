@@ -1,3 +1,3 @@
 export * from './constants';
-export { consumptionData as graphDataStore } from './stores';
-export { ConsumptionData } from './domain/ConsumptionData';
+export { getGraphData, createGraphData } from './stores.svelte';
+export { ConsumptionData } from './domain/ConsumptionData.svelte';

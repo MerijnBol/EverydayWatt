@@ -1,6 +1,9 @@
 <script lang="ts">
     import '../app.css';
 	import { page } from '$app/state';
+	import { createGraphData } from '$lib';
+
+    createGraphData() // Add it to context for all tree decendants.
 
     let { children } = $props();
 </script>
