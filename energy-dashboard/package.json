@@ -47,6 +47,7 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
+		"@sveltejs/adapter-node": "^5.2.16",
 		"chart.js": "^4.4.9"
 	}
 }
